@@ -1,0 +1,468 @@
+/* ═══════════════════════════════════════════════════════════════
+   PKOS Graph UI — Styles
+   Intro screen, HUD overlay, node tooltips, breadcrumb, view toggle
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --glass-bg: rgba(12, 12, 18, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 24px;
+  --accent-graph: #6366f1;
+  --accent-graph-glow: rgba(99, 102, 241, 0.4);
+  --node-category: #8b5cf6;
+  --node-brand: #6366f1;
+  --node-product: #22d3ee;
+  --transition-graph: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══ Three.js Canvas ═══ */
+#node-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+/* ═══ Intro Screen ═══ */
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent; /* user will add their own bg */
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+#intro-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 56px 48px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: intro-float 6s ease-in-out infinite;
+}
+
+@keyframes intro-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.intro-logo {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 20px var(--accent-graph-glow));
+  animation: intro-pulse 3s ease-in-out infinite;
+}
+
+@keyframes intro-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.intro-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.intro-title span {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.intro-subtitle {
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.8);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.intro-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.intro-upload-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+
+.intro-upload-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.intro-upload-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+}
+
+.intro-upload-btn:active {
+  transform: translateY(0);
+}
+
+.intro-upload-btn input[type="file"] {
+  display: none;
+}
+
+/* ═══ Graph HUD ═══ */
+#graph-hud {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  width: calc(100% - 40px);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: var(--transition-graph);
+  pointer-events: none;
+}
+
+#graph-hud.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.hud-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* Breadcrumb */
+.hud-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hud-crumb {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.7);
+  cursor: pointer;
+  transition: color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hud-crumb:hover {
+  color: #a5b4fc;
+}
+
+.hud-crumb.active {
+  color: #f1f5f9;
+  cursor: default;
+}
+
+.hud-crumb-sep {
+  font-size: 0.65rem;
+  color: rgba(148, 163, 184, 0.3);
+}
+
+/* HUD KPI strip */
+.hud-kpis {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hud-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-kpi-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: rgba(148, 163, 184, 0.5);
+  font-weight: 600;
+}
+
+.hud-kpi-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.hud-kpi-value.accent {
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══ View Toggle (bottom-right) ═══ */
+#view-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: var(--transition-graph);
+  pointer-events: none;
+}
+
+#view-toggle.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.6);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.view-toggle-btn.active {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.view-toggle-btn:hover:not(.active) {
+  color: #a5b4fc;
+}
+
+/* ═══ Node Tooltip (follows cursor) ═══ */
+#node-tooltip {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  padding: 10px 16px;
+  background: rgba(15, 15, 25, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+  max-width: 280px;
+}
+
+#node-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.tooltip-sub {
+  font-size: 0.65rem;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+/* ═══ Processing overlay ═══ */
+#graph-processing {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 12, 0.85);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+
+#graph-processing.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.processing-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(99, 102, 241, 0.15);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.processing-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+/* ═══ Back button (top-left, during drill-down) ═══ */
+#graph-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 50;
+  padding: 10px 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: rgba(148, 163, 184, 0.8);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  opacity: 0;
+  transform: translateX(-10px);
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+#graph-back-btn.visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+#graph-back-btn:hover {
+  color: #f1f5f9;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ═══ List view drawer ═══ */
+#list-view-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 8, 14, 0.96);
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+
+#list-view-drawer.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ═══ Graph info badge (top-right) ═══ */
+#graph-info {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: var(--transition-graph);
+  pointer-events: none;
+}
+
+#graph-info.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.info-badge {
+  padding: 8px 14px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.7);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.info-badge .count {
+  color: #a5b4fc;
+  font-weight: 800;
+}

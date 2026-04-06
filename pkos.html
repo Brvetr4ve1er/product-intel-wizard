@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Product Knowledge Operating System — Visual product intelligence for TV products in Algeria">
+    <title>PKOS — Product Knowledge Operating System</title>
+    <link rel="stylesheet" href="pkos.css">
+</head>
+
+<body>
+
+    <!-- Animated background orbs -->
+    <div class="bg-orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="app">
+        <!-- Header -->
+        <header class="pkos-header">
+            <h1>🧠 Product Knowledge OS</h1>
+            <p class="subtitle">Visual Product Intelligence · 7-Layer Schema · Decision Support</p>
+        </header>
+
+        <!-- CSV Import bar -->
+        <div class="csv-import-bar" id="csv-import-bar">
+            <div class="csv-status" id="csv-status">
+                <span class="csv-status-icon">📄</span>
+                <span class="csv-status-text">No CSV loaded — import your product sheet</span>
+            </div>
+            <div class="csv-actions">
+                <label class="csv-btn csv-btn-primary" for="csv-file-input">
+                    📥 Import CSV
+                    <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none">
+                </label>
+                <button class="csv-btn csv-btn-secondary" id="csv-export-btn" disabled>📤 Export CSV</button>
+                <button class="csv-btn csv-btn-secondary" id="csv-template-btn">📋 Download Template</button>
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="stats-bar" id="stats-bar"></div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Search products, specs, features, benefits...">
+            </div>
+        </div>
+
+        <!-- Filter rows -->
+        <div class="controls" id="brand-filters"></div>
+        <div class="controls" id="resolution-filters"></div>
+        <div class="controls" id="role-filters"></div>
+
+        <!-- Product grid -->
+        <div class="product-grid" id="product-grid">
+            <div class="csv-empty-state" id="csv-empty-state">
+                <div class="empty-icon">📊</div>
+                <h2>Import your product CSV to start</h2>
+                <p>Click <strong>Import CSV</strong> above, or <strong>Download Template</strong> to get the column
+                    structure</p>
+                <div class="empty-steps">
+                    <div class="empty-step"><span class="step-num">1</span>Download the CSV template</div>
+                    <div class="empty-step"><span class="step-num">2</span>Fill in your products (one row per product)
+                    </div>
+                    <div class="empty-step"><span class="step-num">3</span>Import the completed CSV here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="pkos-csv-parser.js"></script>
+    <script src="pkos-app.js"></script>
+</body>
+
+</html>

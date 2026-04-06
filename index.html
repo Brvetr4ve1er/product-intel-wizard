@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="PKOS — Product Knowledge Operating System. Interactive product intelligence graph.">
+  <title>PKOS — Product Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="graph.css">
+</head>
+
+<body>
+
+  <!-- ═══ Three.js Canvas (always present, behind everything) ═══ -->
+  <canvas id="node-canvas"></canvas>
+
+  <!-- ═══ Intro Screen (visible on launch, hides after CSV import) ═══ -->
+  <div id="intro-screen">
+    <div class="intro-card">
+      <div class="intro-logo">⚡</div>
+      <h1 class="intro-title">Product <span>Intelligence</span></h1>
+      <p class="intro-subtitle">
+        Importez votre inventaire pour activer le graphe d'intelligence produit.
+      </p>
+      <label class="intro-upload-btn" for="csv-file-input">
+        📥 Importer CSV
+        <input type="file" id="csv-file-input" accept=".csv,.txt">
+      </label>
+    </div>
+  </div>
+
+  <!-- ═══ Processing Overlay ═══ -->
+  <div id="graph-processing">
+    <div class="processing-spinner"></div>
+    <div class="processing-text">Construction du graphe d'intelligence...</div>
+  </div>
+
+  <!-- ═══ Back Button (during drill-down) ═══ -->
+  <button id="graph-back-btn" onclick="GraphEngine.goBack()">← Retour</button>
+
+  <!-- ═══ Graph Info Badges (top-right) ═══ -->
+  <div id="graph-info"></div>
+
+  <!-- ═══ HUD Panel (bottom-left) ═══ -->
+  <div id="graph-hud">
+    <div class="hud-panel">
+      <div class="hud-breadcrumb" id="hud-breadcrumb">
+        <span class="hud-crumb active">🏠 Tous</span>
+      </div>
+      <div class="hud-kpis" id="hud-kpis"></div>
+    </div>
+  </div>
+
+  <!-- ═══ View Toggle (bottom-right) ═══ -->
+  <div id="view-toggle">
+    <button class="view-toggle-btn active" data-view="graph" onclick="switchView('graph')">🔵 Graphe</button>
+    <button class="view-toggle-btn" data-view="list" onclick="switchView('list')">📋 Liste</button>
+  </div>
+
+  <!-- ═══ List View Drawer (old card grid, hidden by default) ═══ -->
+  <div id="list-view-drawer">
+    <!-- CSV Upload Bar (for list view re-upload) -->
+    <div class="csv-upload-bar" id="csv-upload-bar">
+      <div class="csv-status" id="csv-status">
+        <span>📄</span>
+        <span id="csv-status-text">Mode liste</span>
+      </div>
+      <div class="csv-actions">
+        <button class="csv-btn csv-btn-secondary" onclick="switchView('graph')">🔵 Retour au Graphe</button>
+        <button class="csv-btn csv-btn-secondary" id="csv-export-btn" disabled>📤 Exporter</button>
+      </div>
+    </div>
+
+    <!-- KPI Dashboard (list view) -->
+    <section class="kpi-strip" id="kpi-strip" style="display:none">
+      <div class="kpi-card kpi-revenue">
+        <div class="kpi-label">Valeur Stock (Détail)</div>
+        <div class="kpi-value" id="kpi-retail-value">—</div>
+      </div>
+      <div class="kpi-card kpi-cost">
+        <div class="kpi-label">Capital Immobilisé</div>
+        <div class="kpi-value" id="kpi-capital">—</div>
+      </div>
+      <div class="kpi-card kpi-health">
+        <div class="kpi-label">Santé Stock</div>
+        <div class="kpi-health-bar" id="kpi-health-bar"></div>
+      </div>
+      <div class="kpi-card kpi-units">
+        <div class="kpi-label">Unités en Stock</div>
+        <div class="kpi-value" id="kpi-units">—</div>
+      </div>
+    </section>
+
+    <!-- Controls (list view) -->
+    <section class="controls-section" id="controls-section" style="display:none">
+      <h1 class="hero-title">Intelligence <span>Commerciale</span></h1>
+      <p class="hero-sub">Analyse automatique de votre inventaire — marques, catégories, marges et santé stock.</p>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="search-input" placeholder="Rechercher un produit, marque, catégorie...">
+      </div>
+
+      <!-- Category Filter -->
+      <div class="filters" id="category-filters">
+        <div class="filter-group" id="cat-filter-group">
+          <span class="filter-group-label">Catégorie</span>
+          <button class="filter-pill active" data-cat="all">Tout</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group" id="brand-filter-group">
+          <span class="filter-group-label">Marque</span>
+          <button class="filter-pill active" data-brand="all">Tout</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group">
+          <span class="filter-group-label">Stock</span>
+          <button class="filter-pill active" data-stock="all">Tout</button>
+          <button class="filter-pill" data-stock="Normal">✅ Normal</button>
+          <button class="filter-pill" data-stock="Rupture">🔴 Rupture</button>
+          <button class="filter-pill" data-stock="Faible">🟡 Faible</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group">
+          <span class="filter-group-label">Trier</span>
+          <button class="filter-pill active" data-sort="name">Nom</button>
+          <button class="filter-pill" data-sort="margin-desc">Marge ↓</button>
+          <button class="filter-pill" data-sort="margin-asc">Marge ↑</button>
+          <button class="filter-pill" data-sort="price-desc">Prix ↓</button>
+          <button class="filter-pill" data-sort="price-asc">Prix ↑</button>
+          <button class="filter-pill" data-sort="stock-asc">Stock ↑</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results info -->
+    <div class="results-info" id="results-info" style="display:none">
+      <span class="results-count" id="results-count"></span>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid" id="products-grid">
+      <div class="loader-container" id="grid-loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Analyse de l'inventaire...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Node Tooltip (follows cursor) ═══ -->
+  <div id="node-tooltip">
+    <div class="tooltip-label"></div>
+    <div class="tooltip-sub"></div>
+  </div>
+
+  <!-- ═══ Detail Modal (unchanged — works in both views) ═══ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-brand" id="modal-brand"></div>
+          <div class="modal-name" id="modal-name"></div>
+          <div class="modal-model" id="modal-model"></div>
+        </div>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Drag overlay ═══ -->
+  <div class="drag-overlay" id="drag-overlay">
+    <div class="drag-content">📥<br>Déposez votre fichier CSV ici</div>
+  </div>
+
+  <!-- ═══ Scripts ═══ -->
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Core engine (unchanged) -->
+  <script src="inventory-parser.js"></script>
+  <script src="attribute-schema.js"></script>
+  <script src="product-enrichments.js"></script>
+  <script src="llm-engine.js"></script>
+  <script src="pkos-modal.js"></script>
+
+  <!-- Graph engine (new) -->
+  <script src="graph-engine.js"></script>
+
+  <!-- App controller -->
+  <script src="index.js"></script>
+
+  <script>
+    // ── View switching ──
+    function switchView(view) {
+      const drawer = document.getElementById('list-view-drawer');
+      const canvas = document.getElementById('node-canvas');
+      const hud = document.getElementById('graph-hud');
+      const info = document.getElementById('graph-info');
+      const toggle = document.getElementById('view-toggle');
+      const back = document.getElementById('graph-back-btn');
+
+      document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+
+      if (view === 'list') {
+        drawer.classList.add('visible');
+        canvas.style.opacity = '0';
+        if (hud) hud.classList.remove('visible');
+        if (info) info.classList.remove('visible');
+        if (back) back.classList.remove('visible');
+      } else {
+        drawer.classList.remove('visible');
+        canvas.style.opacity = '1';
+        if (hud) hud.classList.add('visible');
+        if (info) info.classList.add('visible');
+      }
+    }
+  </script>
+</body>
+
+</html>
